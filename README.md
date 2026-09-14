@@ -1,6 +1,6 @@
 # AcolytePOS
 
-Flutter POS for parish / youth snacks — natural-language orders + giant **vuelto**.
+Flutter kiosk POS (parish / youth snacks) — AI natural-language orders, large product cards, and a giant **vuelto** panel.
 
 Works **offline** (local Spanish parser). Optional Gemini via `--dart-define=GEMINI_API_KEY=...`.
 
