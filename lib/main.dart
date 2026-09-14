@@ -686,8 +686,20 @@ class _ProductCard extends StatelessWidget {
   }
 }
 
+
+String _foldEs(String s) {
+  const from = 'áàäâéèëêíìïîóòöôúùüûñÁÀÄÂÉÈËÊÍÌÏÎÓÒÖÔÚÙÜÛÑ';
+  const to = 'aaaaeeeeiiiioooouuuunAAAAEEEEIIIIOOOOUUUUN';
+  final buf = StringBuffer();
+  for (final ch in s.split('')) {
+    final i = from.indexOf(ch);
+    buf.write(i >= 0 ? to[i] : ch);
+  }
+  return buf.toString().toLowerCase();
+}
+
 ParsedOrder parseLocalOrder(String raw) {
-  final text = raw.toLowerCase();
+  final text = _foldEs(raw);
   final items = <CartLine>[];
   for (final p in catalog) {
     final qty = _qtyForProduct(text, p);
@@ -712,8 +724,10 @@ ParsedOrder parseLocalOrder(String raw) {
 int _qtyForProduct(String text, Product p) {
   var best = 0;
   for (final alias in p.aliases) {
+    final a = RegExp.escape(_foldEs(alias));
+    // Avoid \\b — breaks on accented chars in Dart.
     final withNum = RegExp(
-      r'(?:^|\s)(?:(\d+)|un|una|unos|unas)\s+' + RegExp.escape(alias) + r'\b',
+      r'(?:^|\s)(?:(\d+)|un|una|unos|unas)\s+' + a + r'(?=\s|$|[,.])',
     );
     var hit = 0;
     for (final m in withNum.allMatches(text)) {
@@ -721,7 +735,7 @@ int _qtyForProduct(String text, Product p) {
       hit += g != null ? (int.tryParse(g) ?? 1) : 1;
     }
     if (hit == 0) {
-      final bare = RegExp(r'\b' + RegExp.escape(alias) + r'\b');
+      final bare = RegExp(r'(?:^|\s)' + a + r'(?=\s|$|[,.])');
       if (bare.hasMatch(text)) hit = 1;
     }
     if (hit > best) best = hit;
